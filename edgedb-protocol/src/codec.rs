@@ -651,7 +651,6 @@ fn decode_array_like<'t>(elements: DecodeArrayLike<'t>, codec:&dyn Codec) -> Res
 }
 
 impl Codec for Object {
-    #[tracing::instrument(err, skip_all, name = "decode")]
     fn decode(&self, buf: &[u8]) -> Result<Value, DecodeError> {
         let mut elements = DecodeTupleLike::new_object(buf, self.codecs.len())?;
         let fields = self.codecs
@@ -664,7 +663,6 @@ impl Codec for Object {
             fields,
         })
     }
-    #[tracing::instrument(err, skip_all, name = "encode")]
     fn encode(&self, buf: &mut BytesMut, val: &Value)
         -> Result<(), EncodeError>
     {
@@ -680,10 +678,10 @@ impl Codec for Object {
         buf.put_u32(self.codecs.len().try_into()
                     .ok().context(errors::TooManyElements)?);
 
-        
+
         let sorted_fields = {
             use std::collections::HashMap;
-            
+
             let mut server_field_names: Vec<(&str, usize)> = shape.elements
                 .iter()
                 .enumerate()
